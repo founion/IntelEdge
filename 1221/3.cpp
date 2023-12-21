@@ -1,8 +1,18 @@
 #include <iostream>
-int main() {
-	int sum = 0;
-	sum = 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10;
+using namespace std;
 
-	std::cout << "1부터 10까지 더한 결과는 " << sum << "입니다.";
-	return 0;
+int main() {
+	cout << "두 수를 입력하라>>";
+	
+	int a, b;
+	cin >> a >> b;
+	
+	int large;
+	if (a > b) {
+		large = a;
+	}
+	else if (a < b) {
+		large = b;
+	}
+	cout << "큰 수 = " << large << endl;
 }
