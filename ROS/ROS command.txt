@@ -1,0 +1,291 @@
+sudo apt-get update  // 가장 중요(ROS 환경을 위해)
+sudo apt-get upgrade
+
+sudo apt-get install xfce4       // 원격데스크 인터페이스 설치
+systemctl status xrdp            // ubuntu에서 xrdp 패키지 설치 여부 확인
+sudo apt-get install xrdp        // ubuntu에서 xrdp 패키지 설치
+sudo gedit /etc/xrdp/startwm.sh  // xrdp 설정파일중에 startwm.sh 수정(마지막에  추가하기 : #xrdp multiple users cinfiguration
+                                                                                      xfce-session
+                                                                                      #./etc/X11/Xsession
+                                                                                      ./usr/bin/startxfce4 )
+sudo systemctl enable --now xrdp                    // 부팅 후 자동 실행되도록 설정
+sudo ufw allow form any to any port 3389 proto tcp  // 방화벽 설정 추가. 3389 포트 열기
+sudo /etc/init.d/xrdp restart                       // xrdp를 재시작
+ifconfig                                            // 네트워크 설정 확인
+(ifconfig 명령어를 찾을 수 없다면, sudo apt install net-tools)
+*Ubuntu PC 재시작*
+netstat -antp                                       // 원격데스크톱의 기본 포트 3389 확인하기
+sudo apt install ufw                                // 방화벽(ufw) 설치
+sudo ufw allow from any to any port 3389            //incoming, outgoing connections 허용
+sudo ufw enable                                     // 방화벽 활성화
+sudo ufw status verbose                             // 방화벽 상태확인
+
+sudo apt-get purge ros-*  // ros 패키지와 설정파일 함께 삭제(안정화를 위해 삭제 후 다시 설치)
+sudo apt autoremove
+rosversion -d             // 삭제 확인
+
+// Install ROS on Remote PC (emanual.robotis.com)
+sudo apt update
+sudo apt upgrade
+wget https://raw.githubusercontent.com/ROBOTIS-GIT/robotis_tools/master/install_ros_noetic.sh
+chmod 755 ./install_ros_noetic.sh 
+bash ./install_ros_noetic.sh
+
+// Install Dependent ROS packages (emanual.robotis.com)
+sudo apt-get install ros-noetic-joy ros-noetic-teleop-twist-joy \
+ros-noetic-teleop-twist-keyboard ros-noetic-laser-proc \
+ros-noetic-rgbd-launch ros-noetic-rosserial-arduino \
+ros-noetic-rosserial-python ros-noetic-rosserial-client \
+ros-noetic-rosserial-msgs ros-noetic-amcl ros-noetic-map-server \
+ros-noetic-move-base ros-noetic-urdf ros-noetic-xacro \
+ros-noetic-compressed-image-transport ros-noetic-rqt* ros-noetic-rviz \
+ros-noetic-gmapping ros-noetic-navigation ros-noetic-interactive-markers
+
+// Expand more details about building TurtleBot3 package from source (emanual.robotis.com)
+cd ~/catkin_ws/src/
+git clone -b noetic-devel https://github.com/ROBOTIS-GIT/DynamixelSDK.git
+git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
+git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3.git
+cd ~/catkin_ws && catkin_make
+
+gedit ~/.bashrc   // 환경설정 파일에서 Remote PC IP 입력
+(export ROS_MASTER_URI=http://localhost:11311
+ export ROS_HOSTNAME= localhost
+=> export ROS_MASTER_URI=http://192.168.1.126:11311
+   export ROS_HOSTNAME= 192.168.1.126)
+echo "export TURTLEBOT3_MODEL=burger">>~/.bashrc
+source ~/.bashrc  // 환경변수 설정 반영하기
+
+// ROS 동작 명령어
+roscore
+rosrun turtlesim turtlesim_node
+rosrun turtlesim turtle_teleop_key 
+rqt_graph
+
+cd /media/$USER/writable/etc/netplan
+sudo nano 50-cloud-init.yaml
+(WIFI_SSID: -> TP-Link_9160_5G:
+ password: WIFI_PASSWORD -> password: 91919533)
+cd ..
+sudo nano hostname
+(ubuntu -> ubuntu7)
+
+ssh ubuntu@192.168.1.168  // remote connection
+nano ~/.bashrc    // 환경변수 열기(nano 편집기)
+(export ROS_MASTER_URI=http://'192.168.1.168':11311
+ export ROS_HOSTNAME='192.168.1.168'
+ export LDS_MODEL=LDS-01 -> export LDS_MODEL=LDS-02)
+source ~/.bashrc  // 환경변수 반영
+sudo apt update
+sudo apt upgrade
+
+// LDS-02를 위한 update 작업
+sudo apt install libudev-dev
+cd ~/catkin_ws/src
+git clone -b develop https://github.com/ROBOTIS-GIT/ld08_driver.git
+cd ~/catkin_ws/src/turtlebot3 && git pull
+rm -r turtlebot3_description/ turtlebot3_teleop/ turtlebot3_navigation/ turtlebot3_slam/ turtlebot3_example/
+cd ~/catkin_ws && catkin_make
+
+ssh ubuntu@192.168.1.168 pw turtlebot  // Remote PC에서 원격접속
+// Install required packages on the Raspberry Pi to upload the OpenCR firmware
+{$ sudo dpkg --add-architecture armhf  
+ $ sudo apt-get update
+ $ sudo apt-get install libc6:armhf }
+// Depending on the platform, use either burger for the OPENCR_MODEL name
+{$ export OPENCR_PORT=/dev/ttyACM0  
+ $ export OPENCR_MODEL=burger_noetic
+ $ rm -rf ./opencr_update.tar.bz2 }
+// Download the firmware and loader, then extract the file
+{$ wget https://github.com/ROBOTIS-GIT/OpenCR-Binaries/raw/master/turtlebot3/ROS1/latest/opencr_update.tar.bz2  
+ $ tar -xvf opencr_update.tar.bz2 }
+// Upload firmware to the OpenCR
+{$ cd ./opencr_update  
+ $ ./update.sh $OPENCR_PORT $OPENCR_MODEL.opencr }
+
+nano ~/.bashrc
+export TURTLEBOT3_MODEL=burger
+source ~/.bashrc
+
+roscore
+roslaunch turtlebot3_bringup turtlebot3_robot.launch      // TurtleBot3 applications 시작하기 위한 기본 package 불러오기
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch  // TurtleBot3 keyboard로 조작(w : 전진, x : 후진, a : 왼쪽 회전, d : 오른쪽 회전, s : 멈춤)
+rqt
+
+===========================================================================================================================================
+<ROS 명령어 연습>
+rosrun turtlesim turtlesim_node                         // 하나의 (turtlesim) node 실행
+sudo apt-get install ros-noetic-openni-launch           // 하나 이상의 node를 실행하거나 실행 옵션을 설정
+rosclean check                                          // ROS 로그 검사
+rosclean purge                                          // ROS 로그 삭제
+rosnode list                                            // 실행중인 node 목록 확인
+rosnode ping /turtlesim(or teleop_turtle or rosout 등)  // 현재 사용중인 노드와 Remote PC와의 연결 테스트
+rosnode info /turtlesim(or teleop_turtle or rosout 등)  // 지정된 노드 정보 확인
+rostopic type /(node)                                  // message type 확인
+rosmsg show (msg type)                                 // message 내용 확인
+rosnode machine 192.168.1.126                          // Remote PC에서 실행되고 있는 노드 목록
+rostopic echo /(topic 이름)                             // 지정한 토픽의 메세지 내용 실시간 표시(현재 발행되는 data 확인)
+rostopic pub /(topic 이름) (message type) (parameter)   // 지정된 토픽으로 message를 published
+rosservice info /(서비스 이름)                            // 지정한 서비스의 정보 표시
+rosparam list                                          // 같은 네트워크에서 사용 중인 파라미터 목록 표시
+rosmsg list                                            // 모든 메세지 목록 표시(ROS에 설치된 패키지의 모든 메세지를 목록으로 표시)
+===========================================================================================================================================
+
+roscore
+ssh ubuntu@192.168.1.168
+roslaunch turtlebot3_bringup turtlebot3_robot.launch
+roslaunch turtlebot3_slam turtlebot3_slam.launch  // ros slam 실행 -> rviz창이 열리고 라이다를 통해 맵핑
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch  // turtlebot3을 조작하여 이동경로를 맵핑
+rosrun map_server map_saver -f ~/map  // 맵핑한 이동경로를 저장
+(rqt_graph  // slam 실행시 topic의 이동 경로 확인
+ rosrun rqt_tf_tree rqt_tf_tree  // slam 실행시 tf_tree 확인)
+roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map.yaml  // rviz창이 열리며 저장된 맵에서 turtlebot3 내비게이션 실행
+
+// Install Simulation Package
+cd ~/catkin_ws/src/
+git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
+cd ~/catkin_ws && catkin_make
+
+// Launch Simulation World
+export TURTLEBOT3_MODEL=burger
+roslaunch turtlebot3_gazebo turtlebot3_empty_world.launch  // empty world
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+export TURTLEBOT3_MODEL=burger
+roslaunch turtlebot3_gazebo turtlebot3_world.launch  // world
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+export TURTLEBOT3_MODEL=burger
+roslaunch turtlebot3_gazebo turtlebot3_house.launch  // house
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+
+// Slam을 통해 mapping하고 navigation 실행
+export TURTLEBOT3_MODEL=burger
+roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+rosrun map_server map_saver -f ~/map
+export TURTLEBOT3_MODEL=burger
+roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map.yaml
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+
+// Autonomous Driving
+/* Remote PC */
+// Install AutoRace package
+cd ~/catkin_ws/src/
+git clone -b feature-raspicam https://github.com/ROBOTIS-GIT/turtlebot3_autorace_2020.git
+cd ~/catkin_ws && catkin_make
+
+/* SBC */
+// Install AutoRace package
+ssh ubuntu@192.168.1.167
+cd ~/catkin_ws/src/
+git clone -b feature-raspicam https://github.com/ROBOTIS-GIT/turtlebot3_autorace_2020.git
+cd ~/catkin_ws && catkin_make
+
+// Install additional dependent packages
+sudo fallocate -l 4G /swapfile
+sudo swapoff -a  // fallocate failed 발생하면 실행(비활성화)하고 다시 진행
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+// Install required dependencies
+sudo apt-get update
+sudo apt-get install build-essential cmake gcc g++ git unzip pkg-config
+sudo apt-get install libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libgtk2.0-dev libcanberra-gtk* libxvidcore-dev libx264-dev python3-dev python3-numpy python3-pip libtbb2 libtbb-dev libdc1394-22-dev libv4l-dev v4l-utils libopenblas-dev libatlas-base-dev libblas-dev liblapack-dev gfortran libhdf5-dev libprotobuf-dev libgoogle-glog-dev libgflags-dev protobuf-compiler
+
+// Build with opencv & opencv_contrib
+cd ~
+wget -O opencv.zip https://github.com/opencv/opencv/archive/4.5.0.zip
+wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.5.0.zip
+unzip opencv.zip
+unzip opencv_contrib.zip
+mv opencv-4.5.0 opencv
+mv opencv_contrib-4.5.0 opencv_contrib
+
+// Create cmake file
+cd opencv
+mkdir build
+cd build
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+      -D CMAKE_INSTALL_PREFIX=/usr/local \
+      -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+      -D ENABLE_NEON=ON \
+      -D BUILD_TIFF=ON \
+      -D WITH_FFMPEG=ON \
+      -D WITH_GSTREAMER=ON \
+      -D WITH_TBB=ON \
+      -D BUILD_TBB=ON \
+      -D BUILD_TESTS=OFF \
+      -D WITH_EIGEN=OFF \
+      -D WITH_V4L=ON \
+      -D WITH_LIBV4L=ON \
+      -D WITH_VTK=OFF \
+      -D OPENCV_ENABLE_NONFREE=ON \
+      -D INSTALL_C_EXAMPLES=OFF \
+      -D INSTALL_PYTHON_EXAMPLES=OFF \
+      -D BUILD_NEW_PYTHON_SUPPORT=ON \
+      -D BUILD_opencv_python3=TRUE \
+      -D OPENCV_GENERATE_PKGCONFIG=ON \
+      -D BUILD_EXAMPLES=OFF ..
+cd ~/opencv/build
+make -j4
+sudo make install
+sudo ldconfig
+make clean
+sudo apt-get update
+sudo apt install ffmpeg
+ffmpeg -f video4linux2 -s 640x480 -i /dev/video0 -ss 0:0:2 -frames 1 capture_test.jpg
+sudo apt install ros-noetic-cv-camera
+
+/* Remote PC */
+sudo apt install ros-noetic-image-transport ros-noetic-image-transport-plugins ros-noetic-cv-bridge ros-noetic-vision-opencv python3-opencv libopencv-dev ros-noetic-image-proc ros-noetic-cv-camera ros-noetic-camera-calibration 
+
+// Camera Calibration //
+/* intrinsic_camera_calibration */
+R.P - roscore
+New R.P - ssh ubuntu@192.168.1.167
+SBC - roslaunch turtlebot3_autorace_camera raspberry_pi_camera_publish.launch  // camera 실행
+New R.P - roslaunch turtlebot3_autorace_camera intrinsic_camera_calibration.launch mode:=calibration
+=> checkboard를 상하좌우, 앞뒤, 상하좌우비스듬히 움직여 X, Y, Size, Skew의 BAR를 녹색으로 채우고 CALIBRATE 및 SAVE
+   TMP 폴더에 calibrationdata.tar.gz 앞축 풀어 폴더 내의 ost.yaml에서 camera_name : 'narrow_stereo'를 'camera'로 변경 후 저장
+   ost.yaml 파일을 복사하여 camerav2_320x240_30fps.yaml로 저장
+   camerav2_320x240_30fps.yaml을 복사하여 catkin_ws / src / turtlebot3_autorace_2020 / turtlebot3_autorace_camera / calibration / intrinsic_calibration에 있는 camerav2_320x240_30fps.yaml 위에 덮어쓰기
+
+/* extrinsic_camera_calibration */
+R.P - roscore
+New R.P - ssh ubuntu@192.168.1.167
+SBC - roslaunch turtlebot3_autorace_camera raspberry_pi_camera_publish.launch
+New R.P - roslaunch turtlebot3_autorace_camera intrinsic_camera_calibration.launch mode:=action
+New R.P - roslaunch turtlebot3_autorace_camera extrinsic_camera_calibration.launch mode:=calibration
+New R.P - rqt
+New R.P - rosrun rqt_reconfigure rqt_reconfigure
+=> rqt를 보면서 rqt_reconfigure에서 조절
+   top_x, top_y, bottom_x, bottom_y 값 조절하여 projected view Guide box를 위 30cm, 좌우 lane 다 포함되도록 매개변수 변경 후 저장
+   변경한 값을 다른이름으로 저장 후에 catkin_ws / src / turtlebot3_autorace_2020 / turtlebot3_autorace_camera / calibration / extrinsic_calibration에 Projection_new_temp.yaml로 저장
+   catkin_ws / src / turtlebot3_autorace_2020 / turtlebot3_autorace_camera / calibration / extrinsic_calibration의 projection.yaml에 변경된 값 반영하기
+   
+/* Lane detection */
+R.P - roscore
+New R.P - ssh ubuntu@192.168.1.167
+SBC - roslaunch turtlebot3_autorace_camera raspberry_pi_camera_publish.launch
+New R.P - roslaunch turtlebot3_autorace_camera intrinsic_camera_calibration.launch mode:=action
+New R.P - roslaunch turtlebot3_autorace_camera extrinsic_camera_calibration.launch mode:=action
+New R.P - roslaunch turtlebot3_autorace_camera detect detect_lane.launch mode:=calibration
+New R.P - rqt
+New R.P - rosrun rqt_reconfigure rqt_reconfigure
+=> rqt 창 3개를 보면서 rqt_reconfigure에서 조절
+   yellow lane 부분에는 yellow lane만 보이도록, white lane 부분에는 white lane만 보이도록 hue_white_l/h, hue_yellow_l/h, saturation_white_l/h, saturation_yellow_l/h 값 변경
+   변경한 값을 다른이름으로 저장 후에 catkin_ws / src / turtlebot3_autorace_2020 / turtlebot3_autorace_detect / param / lane에 lane_temp.yaml로 저장
+   catkin_ws / src / turtlebot3_autorace_2020 / turtlebot3_autorace_detect / param / lane의 lane.yaml에 변경된 값 반영하기
+   
+/* Autonomous Driving 실행 */
+R.P - roscore
+New R.P - ssh ubuntu@192.168.1.167
+SBC - roslaunch turtlebot3_autorace_camera raspberry_pi_camera_publish.launch
+New R.P - roslaunch turtlebot3_autorace_camera intrinsic_camera_calibration.launch mode:=action
+New R.P - roslaunch turtlebot3_autorace_camera extrinsic_camera_calibration.launch mode:=action
+New R.P - roslaunch turtlebot3_autorace_detect detect_lane.launch mode:=action
+New R.P - roslaunch turtlebot3_autorace_driving turtlebot3_autorace_control_lane.launch
+New R.P - ssh ubuntu@192.168.1.167
+SBC - roslaunch turtlebot3_bringup turtlebot3_robot.launch (bringup과정을 카메라 실행 후에 시행해도 된다.)
+ # 운행을 중지하고 싶으면 roslaunch turtlebot3_autorace_driving turtlebot3_autorace_control_lane.launch을 ctrl + c로 정지 시킨다.
