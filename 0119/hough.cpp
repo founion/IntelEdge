@@ -10,9 +10,9 @@ void hough_circles();
 
 int main(void)
 {
-	hough_lines();  // ÇãÇÁ º¯È¯ Á÷¼± °ËÃâ
-	hough_line_segments();  // È®·üÀû ÇãÇÁ º¯È¯ ¼±ºĞ °ËÃâ
-	hough_circles();  // ÇãÇÁ ¿ø °ËÃâ
+	hough_lines();          // í—ˆí”„ ë³€í™˜ ì§ì„  ê²€ì¶œ
+	hough_line_segments();  // í™•ë¥ ì  í—ˆí”„ ë³€í™˜ ì„ ë¶„ ê²€ì¶œ
+	hough_circles();        // í—ˆí”„ ì› ê²€ì¶œ
 
 	return 0;
 }
