@@ -8,7 +8,7 @@ void decode_qrcode();
 
 int main(void)
 {
-	decode_qrcode();  // QR ÄÚµå °ËÃâ ¹× ÇØ¼®
+	decode_qrcode();  // QR Ã„ÃšÂµÃ¥ Â°Ã‹ÃƒÃ¢ Â¹Ã— Ã‡Ã˜Â¼Â®
 
 	return 0;
 }
@@ -39,9 +39,10 @@ void decode_qrcode()
 		if (!info.empty()) {
 			polylines(frame, points, true, Scalar(0, 0, 255), 2);
 			putText(frame, info, Point(10, 30), FONT_HERSHEY_DUPLEX, 1, Scalar(0, 0, 255));
+			cout << "url: " << info << endl;
 		}
 
 		imshow("frame", frame);
-		if (waitKey() == 27) break;
+		if (waitKey(10) == 27) break;
 	}
 }
