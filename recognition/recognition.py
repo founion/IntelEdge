@@ -57,15 +57,12 @@ while True:
     for (x, y, w, h) in frontal_faces:
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         id_front, confidence = frontal_recognizer.predict(gray[y:y + h, x:x + w])
-        if confidence < 80:
+        if confidence < 70:
             id = frontal_id_to_names[id_front]
             confidence_text = " {0}%".format(round(100 - confidence))
-        elif confidenc > 100:
-            id = frontal_id_to_names[5]
-            confidence_text = " {0}%".format(0)
         else:
             id = frontal_id_to_names[5]
-            confidence_text = " {0}%".format(round(100 - confidence))
+            confidence_text = " "
 
         cv2.putText(img, str(id), (x + 5, y - 5), font, 1, (255, 255, 255), 2)
         cv2.putText(img, str(confidence_text), (x + 5, y + h - 2), font, 1, (255, 255, 0), 1)
@@ -78,13 +75,10 @@ while True:
         if confidence < 80:
             id = profile_id_to_names[id_profile]
             confidence_text = " {0}%".format(round(100 - confidence))
-        elif confidence > 100:
-            id = profile_id_to_names[5]
-            confidence_text = " {0}%".format(0)
         else:
             #name = "unknown"
             id = frontal_id_to_names[5]
-            confidence_text = " {0}%".format(round(100 - confidence))
+            confidence_text = " "
 
         cv2.putText(img, str(id), (x + 5, y - 5), font, 1, (255, 255, 255), 2)
         cv2.putText(img, str(confidence_text), (x + 5, y + h - 2), font, 1, (255, 255, 0), 1)
