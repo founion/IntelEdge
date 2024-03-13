@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 import os
 
-path = '/home/yk/openvino_notebooks/datasets/test'
+path = '/home/yk/openvino_notebooks/datasets/test'  # datasets이 저장되어 있는 주소
 frontal_face_recognizer = cv2.face.LBPHFaceRecognizer_create()
 profile_face_recognizer = cv2.face.LBPHFaceRecognizer_create()
 
@@ -24,7 +24,7 @@ def getImagesAndLabels(path, detector):
             faces = profile_face_detector.detectMultiScale(img_numpy)
         for (x, y, w, h) in faces:
             faceSamples.append(img_numpy[y:y+h, x:x+w])
-            ids.append(int(os.path.split(imagePath)[-1].split("_")[2].split(".")[0]))
+            ids.append(int(os.path.split(imagePath)[-1].split("_")[2]))  # 사람에 맞는 인덱스 번호만 추출
     return faceSamples, ids
 
 print("\n [INFO] Training frontal faces. Please wait ...")
