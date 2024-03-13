@@ -7,12 +7,12 @@ cam.set(4, 480)
 face_detector1 = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 face_detector2 = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_profileface.xml')
 
-face_num = input('\n enter user id_num end press <return> ==> ')
+face_num = input('\n enter user id_num end press <return> ==> ')  # 사람에 맞는 인덱스 부여
 face_id = input('\n enter user id end press <return> ==> ')  # 저장할 파일 이름 설정
 print("\n [INFO] Initializing face capture. Look the camera and wait ...")
 
-count1 = 51
-count2 = 51
+count1 = 0
+count2 = 0
 
 while True:  # 정면 사진 50장 저장
     ret, img = cam.read()
@@ -21,13 +21,14 @@ while True:  # 정면 사진 50장 저장
     for (x,y,w,h) in faces1:
         cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)
         count1 += 1
+        # 저장할 주소 + name_f_index_count1.jpg
         cv2.imwrite("/home/yk/openvino_notebooks/datasets/test/" + str(face_id) + '_' + "f" + '_' + str(face_num) + '_' + str(count1) + ".jpg", gray[y:y+h,x:x+w])
         cv2.imshow('image', img)
 
     k = cv2.waitKey(100) & 0xff
     if k == 27:
         break
-    elif count1 >= 200:
+    elif count1 >= 200:  # 저장할 datasets 개수 설정
         break
 
 while True:  # 측면 사진 50장 저장
@@ -37,13 +38,14 @@ while True:  # 측면 사진 50장 저장
     for (x,y,w,h) in faces2:
         cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)
         count2 += 1
+        # 저장할 주소 + name_p_index_count2.jpg
         cv2.imwrite("/home/yk/openvino_notebooks/datasets/test/" + str(face_id) + '_' + "p" + '_' + str(face_num) + '_' + str(count2) + ".jpg", gray[y:y+h,x:x+w])
         cv2.imshow('image', img)
 
     k = cv2.waitKey(100) & 0xff
     if k == 27:
         break
-    elif count2 >= 200:
+    elif count2 >= 200:  # 저장할 datasets 개수 설정
         break
 
 print("\n [INFO] Exiting Program and cleanup stuff")
