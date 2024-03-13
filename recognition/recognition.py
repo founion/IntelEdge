@@ -21,10 +21,10 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 id = 0
 
 # Mapping of IDs to names for frontal faces
-frontal_id_to_names = ['yukyeong', 'hojoon', 'jeonghwan', 'ayeong', 'test1', 'test2']
+frontal_id_to_names = ['jeonghwan', 'hojoon', 'yukyeong', 'ayeong', 'test1', 'unknown']
 
 # Mapping of IDs to names for profile faces
-profile_id_to_names = ['yukyeong', 'hojoon', 'jeonghwan', 'ayeong', 'test1', 'test2']
+profile_id_to_names = ['jeonghwan', 'hojoon', 'yukyeong', 'ayeong', 'test1', 'unknown']
 
 cam = cv2.VideoCapture(0)
 cam.set(3, 640)
@@ -57,12 +57,11 @@ while True:
     for (x, y, w, h) in frontal_faces:
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         id, confidence = frontal_recognizer.predict(gray[y:y + h, x:x + w])
-
-        if confidence < 100:
+        if confidence < 70:
             id = frontal_id_to_names[id % 6]
             confidence_text = " {0}%".format(round(100 - confidence))
         else:
-            name = "unknown"
+            id = frontal_id_to_names[5]
             confidence_text = " {0}%".format(round(100 - confidence))
 
         cv2.putText(img, str(id), (x + 5, y - 5), font, 1, (255, 255, 255), 2)
@@ -73,11 +72,12 @@ while True:
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         id, confidence = profile_recognizer.predict(gray[y:y + h, x:x + w])
 
-        if confidence < 100:
+        if confidence < 70:
             id = profile_id_to_names[id % 6]
             confidence_text = " {0}%".format(round(100 - confidence))
         else:
-            name = "unknown"
+            #name = "unknown"
+            id = frontal_id_to_names[5]
             confidence_text = " {0}%".format(round(100 - confidence))
 
         cv2.putText(img, str(id), (x + 5, y - 5), font, 1, (255, 255, 255), 2)
