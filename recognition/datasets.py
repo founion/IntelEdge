@@ -21,6 +21,7 @@ while True:  # 정면 사진 50장 저장
     for (x,y,w,h) in faces1:
         cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)
         count1 += 1
+        # datasets을 저장할 주소 + name_f_index_count1.jpg
         cv2.imwrite("/home/yk/openvino_notebooks/datasets/test/" + str(face_id) + '_' + "f" + '_' + str(face_num) + '_' + str(count1) + ".jpg", gray[y:y+h,x:x+w])
         cv2.imshow('image', img)
 
@@ -37,7 +38,8 @@ while True:  # 측면(좌) 사진 50장 저장
     for (x,y,w,h) in faces2:
         cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)
         count2 += 1
-        cv2.imwrite("/home/yk/openvino_notebooks/datasets/test/" + str(face_id) + '_' + "pl" + '_'  + str(face_num) + '_' + str(count2) + ".jpg", gray[y:y+h,x:x+w])
+        # datasets을 저장할 주소 + name_p_index_count2.jpg
+        cv2.imwrite("/home/yk/openvino_notebooks/datasets/test/" + str(face_id) + '_' + "p" + '_'  + str(face_num) + '_' + str(count2) + ".jpg", gray[y:y+h,x:x+w])
         cv2.imshow('image', img)
 
     k = cv2.waitKey(100) & 0xff
