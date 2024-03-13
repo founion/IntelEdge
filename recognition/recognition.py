@@ -56,10 +56,13 @@ while True:
     # Draw rectangles and recognize frontal faces
     for (x, y, w, h) in frontal_faces:
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        id, confidence = frontal_recognizer.predict(gray[y:y + h, x:x + w])
-        if confidence < 70:
-            id = frontal_id_to_names[id % 6]
+        id_front, confidence = frontal_recognizer.predict(gray[y:y + h, x:x + w])
+        if confidence < 80:
+            id = frontal_id_to_names[id_front]
             confidence_text = " {0}%".format(round(100 - confidence))
+        elif confidenc > 100:
+            id = frontal_id_to_names[5]
+            confidence_text = " {0}%".format(0)
         else:
             id = frontal_id_to_names[5]
             confidence_text = " {0}%".format(round(100 - confidence))
@@ -70,11 +73,14 @@ while True:
     # Draw rectangles and recognize profile faces
     for (x, y, w, h) in profile_faces:
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        id, confidence = profile_recognizer.predict(gray[y:y + h, x:x + w])
+        id_profile, confidence = profile_recognizer.predict(gray[y:y + h, x:x + w])
 
-        if confidence < 70:
-            id = profile_id_to_names[id % 6]
+        if confidence < 80:
+            id = profile_id_to_names[id_profile]
             confidence_text = " {0}%".format(round(100 - confidence))
+        elif confidence > 100:
+            id = profile_id_to_names[5]
+            confidence_text = " {0}%".format(0)
         else:
             #name = "unknown"
             id = frontal_id_to_names[5]
