@@ -58,7 +58,7 @@ while True:
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         id_front, confidence = frontal_recognizer.predict(gray[y:y + h, x:x + w])
         
-        if confidence < 70:
+        if confidence < 70:  # 인식률 30% 이상인 경우
             id = frontal_id_to_names[id_front]
             confidence_text = " {0}%".format(round(100 - confidence))
         else:
@@ -73,7 +73,7 @@ while True:
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         id_profile, confidence = profile_recognizer.predict(gray[y:y + h, x:x + w])
 
-        if confidence < 70:
+        if confidence < 70:  # 인식률 30% 이상인 경우
             id = profile_id_to_names[id_profile]
             confidence_text = " {0}%".format(round(100 - confidence))
         else:
