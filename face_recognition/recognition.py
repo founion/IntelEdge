@@ -1,13 +1,17 @@
 import cv2
 import time
+import os
+import requests
+
+url = 'http://192.168.0.59:5000/upload'
 
 # Load frontal face recognizer
 frontal_recognizer = cv2.face.LBPHFaceRecognizer_create()
-frontal_recognizer.read('/home/yk/openvino_notebooks/train/frontal_trainer.yml')
+frontal_recognizer.read('/home/pi/ai/train/frontal_trainer.yml')
 
 # Load profile face recognizer
 profile_recognizer = cv2.face.LBPHFaceRecognizer_create()
-profile_recognizer.read('/home/yk/openvino_notebooks/train/profile_trainer.yml')
+profile_recognizer.read('/home/pi/ai/train/profile_trainer.yml')
 
 # Load frontal face cascade classifier
 frontal_cascadePath = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
@@ -20,12 +24,14 @@ profile_faceCascade = cv2.CascadeClassifier(profile_cascadePath)
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 id = 0
+cnt_f_p = 0
+cnt_p_p = 0
 
 # Mapping of IDs to names for frontal faces
-frontal_id_to_names = ['jeonghwan', 'unknown']
+frontal_id_to_names = ['jeonghwan', 'intruder']
 
 # Mapping of IDs to names for profile faces
-profile_id_to_names = ['jeonghwan', 'unknown']
+profile_id_to_names = ['jeonghwan', 'intruder']
 
 cam = cv2.VideoCapture(0)
 cam.set(3, 640)
@@ -34,13 +40,11 @@ cam.set(4, 480)
 minW = 0.1 * cam.get(3)
 minH = 0.1 * cam.get(4)
 
-### 추가
-frame_interval = 3
 prev_detection_time = 0
-
 record_start_time = None
 record_duration = 20 # about 30seconds
 video_writer = None
+image_save_dir = '/home/pi/ai/intruder_face'
 
 while True:
     ret, img = cam.read()
@@ -50,31 +54,28 @@ while True:
     current_time = time.time()
     elapsed_time = current_time - prev_detection_time
 
-    ### 수정
-    if elapsed_time > frame_interval:
-        # Detect frontal faces
-        frontal_faces = frontal_faceCascade.detectMultiScale(
-            gray,
-            scaleFactor=1.2,
-            minNeighbors=5,
-            minSize=(int(minW), int(minH)),
-        )
+    # Detect frontal faces
+    frontal_faces = frontal_faceCascade.detectMultiScale(
+        gray,
+        scaleFactor=1.2,
+        minNeighbors=5,
+        minSize=(int(minW), int(minH)),
+    )
 
-        # Detect profile faces
-        profile_faces = profile_faceCascade.detectMultiScale(
-            gray,
-            scaleFactor=1.2,
-            minNeighbors=5,
-            minSize=(int(minW), int(minH)),
-        )
+    # Detect profile faces
+    profile_faces = profile_faceCascade.detectMultiScale(
+        gray,
+        scaleFactor=1.2,
+        minNeighbors=5,
+        minSize=(int(minW), int(minH)),
+    )
 
-        prev_detection_time = current_time
+    prev_detection_time = current_time
 
-        ### 추가
-        if record_start_time is not None and current_time - record_start_time >= record_duration:
-            record_start_time = None
-            if video_writer is not None:
-                video_writer.release()
+    if record_start_time is not None and current_time - record_start_time >= record_duration:
+        record_start_time = None
+        if video_writer is not None:
+            video_writer.release()
 
     # Draw rectangles and recognize frontal faces
     for (x, y, w, h) in frontal_faces:
@@ -92,16 +93,27 @@ while True:
         cv2.putText(img, str(confidence_text), (x + 5, y + h - 2), font, 1, (255, 255, 0), 1)
 
         ### 추가
-        if id == 'unknown' and record_start_time is None:
-            record_start_time = time.time()
-            vidoe_filename = f"/home/yk/openvino_notebooks/unknown_rec/unknown_face_{int(record_start_time)}.avi"
-            video_writer = cv2.VideoWriter(vidoe_filename, cv2.VideoWriter_fourcc(*'XVID'), 20, (640, 480))
+        if id == 'intruder':
+            image_filename = os.path.join(image_save_dir, f"intruder_face_{int(current_time)}.jpg")
+            cv2.imwrite(image_filename, img)
+
+            if record_start_time is None:
+                record_start_time = time.time()
+                video_filename = f"/home/pi/ai/intruder_rec/intruder_frontal_{int(record_start_time)}.avi"
+                video_writer = cv2.VideoWriter(video_filename, cv2.VideoWriter_fourcc(*'XVID'), 20, (640, 480))
+
+            if cnt_f_p == 0:                
+                files = {'file' : open(image_filename, 'rb')}
+                videos = {'file' : open(video_filename, 'rb')}
+                response = requests.post(url, files=files)
+                response = requests.post(url, videos=videos)
+                cnt_f_p = 1
 
         if video_writer is not None:
             video_writer.write(img)
 
     # Draw rectangles and recognize profile faces
-    for (x, y, w, h) in profile_faces:
+    for (x, y, w, h) in profile_faces:                                                                                          
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         id, confidence = profile_recognizer.predict(gray[y:y + h, x:x + w])
 
@@ -116,10 +128,21 @@ while True:
         cv2.putText(img, str(confidence_text), (x + 5, y + h - 2), font, 1, (255, 255, 0), 1)
 
         ### 추가
-        if id == 'unknown' and record_start_time is None:
-            record_start_time = time.time()
-            vidoe_filename = f"/home/yk/openvino_notebooks/unknown_rec/unknown_face_{int(record_start_time)}.avi"
-            video_writer = cv2.VideoWriter(vidoe_filename, cv2.VideoWriter_fourcc(*'XVID'), 20, (640, 480))
+        if id == 'intruder':
+            image_filename = os.path.join(image_save_dir, f"intruder_face_{int(current_time)}.jpg")
+            cv2.imwrite(image_filename, img)
+
+            if record_start_time is None:
+                record_start_time = time.time()
+                video_filename = f"/home/pi/ai/intruder_rec/intruder_profile_{int(record_start_time)}.avi"
+                video_writer = cv2.VideoWriter(video_filename, cv2.VideoWriter_fourcc(*'XVID'), 20, (640, 480))
+
+            if cnt_f_p == 0:                
+                files = {'file' : open(image_filename, 'rb')}
+                videos = {'file' : open(video_filename, 'rb')}
+                response = requests.post(url, files=files)
+                response = requests.post(url, videos=videos)
+                cnt_f_p = 1
 
         if video_writer is not None:
             video_writer.write(img)
