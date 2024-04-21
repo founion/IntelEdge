@@ -1,0 +1,5 @@
+0 Nothing
+1 Black Square
+2 Pink Square
+3 Red Circle
+4 Blue Circle
