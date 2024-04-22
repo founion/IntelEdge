@@ -4,3 +4,4 @@
 **3. Separate_move.py** : Code to move Dobot arm using Gripper   
 **4. s_keras_model.h5** : Model learned Classification(Styrofoam and Paper)   
 **5. s_label.txt** : Label learned Classification(Styrofoam and Paper)   
+2~5 : Update required
