@@ -1,0 +1,4 @@
+0 Plastic
+1 Styrofoam
+2 Paper
+3 None
