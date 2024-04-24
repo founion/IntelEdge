@@ -3,3 +3,5 @@
 **2. Separate_move.py** : Move to a designated location   
 **3. sp_keras_model.h5** : Model file(Classification None_Color_Plastic, Color_Plastic, Paper and Styrofoam)   
 **4. sp_labels.txt** : Label file  
+**5. Final_Report** : Final Report   
+**6. 0424_Separate Result.mp4** : Demonstration Video   
