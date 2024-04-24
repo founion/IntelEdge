@@ -1,0 +1,5 @@
+0 None
+1 N.C_Plastic
+2 C_Plastic
+3 Paper
+4 Styrofoam
